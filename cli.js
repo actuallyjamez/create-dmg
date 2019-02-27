@@ -111,36 +111,7 @@ ee.on('progress', info => {
 });
 
 ee.on('finish', async () => {
-	ora.text = 'Code signing DMG';
-
-	try {
-		let identity;
-		const {stdout} = await execa('security', ['find-identity', '-v', '-p', 'codesigning']);
-		if (stdout.includes('Developer ID Application:')) {
-			identity = 'Developer ID Application';
-		} else if (stdout.includes('Mac Developer:')) {
-			identity = 'Mac Developer';
-		} else {
-			const err = new Error();
-			err.stderr = 'No usable identity found';
-			throw err;
-		}
-
-		await execa('codesign', ['--sign', identity, dmgPath]);
-		const {stderr} = await execa('codesign', [dmgPath, '--display', '--verbose=2']);
-
-		const match = /^Authority=(.*)$/m.exec(stderr);
-		if (!match) {
-			ora.fail('Not code signed');
-			process.exit(1);
-		}
-
-		ora.info(`Code signing identity: ${match[1]}`).start();
-		ora.succeed('DMG created');
-	} catch (error) {
-		ora.fail(`Code signing failed. The DMG is fine, just not code signed.\n${error.stderr.trim()}`);
-		process.exit(2);
-	}
+	
 });
 
 ee.on('error', error => {
